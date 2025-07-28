@@ -6,7 +6,14 @@ block content %}
       <div class="card">
         <div class="card-header">Registrar nuevo servicio</div>
         <div class="card-body">
-          {% if form.errors %}
+          {% if message %}
+          <div class="alert alert-success text-center">
+            <h4>{{ message }}</h4>
+            <a href="{% url 'index' %}" class="btn btn-primary"
+              >Ver Servicios</a
+            >
+          </div>
+          {% else %} {% if form.errors %}
           <ul id="errors" class="alert alert-danger list-unstyled">
             {% for field, errors in form.errors.items %} {% for error in errors
             %}
@@ -32,6 +39,7 @@ block content %}
             />
             <input type="submit" class="btn btn-primary" value="Enviar" />
           </form>
+          {% endif %}
         </div>
       </div>
     </div>

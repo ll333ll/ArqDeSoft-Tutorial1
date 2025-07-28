@@ -1,20 +1,30 @@
 .bg-secondary {
-  background-color: #2c3e50 !important; /* Azul petróleo profundo */
+    background-color: #2c3e50 !important;
 }
+
 .copyright {
-  background-color: #114d4d; /* Verde moneda oscuro */
+    background-color: #1a252f;
 }
+
 .bg-primary {
-  background-color: #7FDBDA !important; /* Pastel oceánico */
+    background-color: #1abc9c !important;
 }
+
 nav {
-  font-weight: 700;
+    font-weight: 700;
 }
+
 .img-card {
-  height: 18vw;
-  object-fit: cover;
+    height: 18vw;
+    object-fit: cover;
 }
+
 .btn-primary {
-  background-color: #00A86B !important; /* Verde moneda claro */
-  border-color: #007f5f !important;
+    background-color: #1abc9c !important;
+    border-color: #16a085 !important;
+}
+
+.btn-primary:hover {
+    background-color: #16a085 !important;
+    border-color: #138d75 !important;
 }

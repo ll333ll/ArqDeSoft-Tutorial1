@@ -7,13 +7,16 @@ block header_title %}{{ subtitle }}{% endblock %} {% block content %}
       <img
         src="https://static.djangoproject.com/img/logos/django-logo-positive.svg"
         class="card-img-top img-card"
+        alt="Imagen del producto"
       />
       <div class="card-body text-center">
         <a
           href="{% url 'show' id=product.id %}"
           class="btn bg-primary text-white"
-          >{{ product.name }}</a
         >
+          {{ product.name }}
+        </a>
+        <p class="mt-2">${{ product.price }}</p>
       </div>
     </div>
   </div>
