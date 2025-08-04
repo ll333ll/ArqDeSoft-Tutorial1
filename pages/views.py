@@ -1,10 +1,12 @@
-from django.shortcuts import render, redirect
-from django.http import HttpResponse, HttpResponseRedirect
-from django.views.generic import TemplateView
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.views.generic import TemplateView, ListView
 from django.views import View
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django import forms
-
-# Create your views here.
+from django.core.exceptions import ValidationError
+from .models import Product
 
 class HomePageView(TemplateView):
     template_name = 'pages/home.html'
@@ -15,10 +17,10 @@ class AboutPageView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            "title": "About us - Plug&Ad",
-            "subtitle": "About us",
+            "title": "Sobre Nosotros - Plug&Ad",
+            "subtitle": "Sobre Nosotros",
             "description": "Automatizamos campañas publicitarias con tecnología y diseño.",
-            "author": "Developed by: Jose Alejandro Jiménez Vásquez",
+            "author": "Desarrollado por: Jose Alejandro Jiménez Vásquez",
         })
         return context
 
@@ -28,58 +30,64 @@ class ContactPageView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            "title": "Contact - Plug&Ad",
-            "subtitle": "Contact us",
+            "title": "Contacto - Plug&Ad",
+            "subtitle": "Contáctanos",
             "email": "jose@plugandad.com",
             "address": "Carrera 69 West, Medellín",
             "phone": "+57 3000000000",
         })
         return context
 
-class Product:
-    products = [
-        {"id":"1", "name":"Campaña Express", "description":"Publicidad rápida para eventos urgentes", "price": 1200.0},
-        {"id":"2", "name":"Meta Ads Pro", "description":"Campaña completa en Facebook e Instagram", "price": 2100.0},
-        {"id":"3", "name":"Google Smart", "description":"Optimización automatizada en Google", "price": 980.0},
-        {"id":"4", "name":"TikTok Viral", "description":"Viralización orgánica + pagos estratégicos", "price": 1300.0}
-    ]
-
 class ProductIndexView(View):
     template_name = 'products/index.html'
     
     def get(self, request):
         viewData = {}
-        viewData["title"] = "Servicios - Plug&Ad"
-        viewData["subtitle"] = "Lista de servicios"
-        viewData["products"] = Product.products
+        viewData["title"] = "Paquetes de Anuncios - Plug&Ad"
+        viewData["subtitle"] = "Lista de Paquetes de Anuncios"
+        viewData["products"] = Product.objects.all()
         return render(request, self.template_name, viewData)
 
 class ProductShowView(View):
     template_name = 'products/show.html'
-    
+
     def get(self, request, id):
+        # Check if product id is valid
         try:
             product_id = int(id)
-            if product_id < 1 or product_id > len(Product.products):
-                return HttpResponseRedirect('/')
-            
-            viewData = {}
-            product = Product.products[product_id-1]
-            viewData["title"] = product["name"] + " - Plug&Ad"
-            viewData["subtitle"] = product["name"] + " - Información del servicio"
-            viewData["product"] = product
-            return render(request, self.template_name, viewData)
+            if product_id < 1:
+                raise ValueError("El ID del paquete de anuncios debe ser 1 o mayor")
+            product = get_object_or_404(Product, pk=product_id)
         except (ValueError, IndexError):
-            return HttpResponseRedirect('/')
+            # If the product id is not valid, redirect to the home page
+            return HttpResponseRedirect(reverse('home'))
+        
+        viewData = {}
+        viewData["title"] = product.name + " - Plug&Ad"
+        viewData["subtitle"] = product.name + " - Información del Paquete de Anuncios"
+        viewData["product"] = product
+        return render(request, self.template_name, viewData)
 
-class ProductForm(forms.Form):
-    name = forms.CharField(required=True)
-    price = forms.FloatField(required=True)
-    
+class ProductListView(ListView):
+    model = Product
+    template_name = 'product_list.html'
+    context_object_name = 'products' # This will allow you to loop through 'products' in your template
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Paquetes de Anuncios - Plug&Ad'
+        context['subtitle'] = 'Lista de Paquetes de Anuncios'
+        return context
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = ['name', 'price']
+
     def clean_price(self):
         price = self.cleaned_data['price']
-        if price <= 0:
-            raise forms.ValidationError("Price must be greater than zero")
+        if price is not None and price <= 0:
+            raise ValidationError('El precio debe ser mayor que cero.')
         return price
 
 class ProductCreateView(View):
@@ -88,20 +96,51 @@ class ProductCreateView(View):
     def get(self, request):
         form = ProductForm()
         viewData = {}
-        viewData["title"] = "Create service"
+        viewData["title"] = "Crear Paquete de Anuncios"
         viewData["form"] = form
         return render(request, self.template_name, viewData)
     
     def post(self, request):
         form = ProductForm(request.POST)
         if form.is_valid():
-            # Simular guardado exitoso
-            viewData = {}
-            viewData["title"] = "Service Created"
-            viewData["message"] = "Service created successfully!"
-            return render(request, 'products/create.html', viewData)
+            form.save()
+            messages.success(request, '¡Paquete de anuncios creado exitosamente!')
+            return redirect('index') # Redirige a la lista de productos
         else:
             viewData = {}
-            viewData["title"] = "Create service"
+            viewData["title"] = "Crear Paquete de Anuncios"
             viewData["form"] = form
+            return render(request, self.template_name, viewData)
+
+class ProductDeleteView(View):
+    def post(self, request, id):
+        product = get_object_or_404(Product, pk=id)
+        product.delete()
+        messages.success(request, '¡Paquete de anuncios eliminado exitosamente!')
+        return redirect('index')
+
+class ProductUpdateView(View):
+    template_name = 'products/update.html'
+
+    def get(self, request, id):
+        product = get_object_or_404(Product, pk=id)
+        form = ProductForm(instance=product)
+        viewData = {}
+        viewData["title"] = "Actualizar Paquete de Anuncios"
+        viewData["form"] = form
+        viewData["product"] = product
+        return render(request, self.template_name, viewData)
+
+    def post(self, request, id):
+        product = get_object_or_404(Product, pk=id)
+        form = ProductForm(request.POST, instance=product)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '¡Paquete de anuncios actualizado exitosamente!')
+            return redirect('show', id=product.id)
+        else:
+            viewData = {}
+            viewData["title"] = "Actualizar Paquete de Anuncios"
+            viewData["form"] = form
+            viewData["product"] = product
             return render(request, self.template_name, viewData)

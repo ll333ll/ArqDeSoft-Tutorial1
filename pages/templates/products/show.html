@@ -1,5 +1,4 @@
-{% extends 'pages/base.html' %} {% block title %}{{ title }}{% endblock %} {%
-block header_title %}{{ subtitle }}{% endblock %} {% block content %}
+{% extends 'pages/base.html' %} {% block title %}{{ title }}{% endblock %} {% block header_title %}{{ subtitle }}{% endblock %} {% block content %}
 <div class="card mb-3">
   <div class="row g-0">
     <div class="col-md-4">
@@ -11,11 +10,18 @@ block header_title %}{{ subtitle }}{% endblock %} {% block content %}
     </div>
     <div class="col-md-8">
       <div class="card-body">
-        <h5 class="card-title" {% if product.price>
-          1000 %}style="color: red;"{% endif %}> {{ product.name }}
+        <h5 class="card-title" {% if product.price > 1000 %}style="color: red;"{% endif %}> {{ product.name }}
         </h5>
         <p class="card-text">{{ product.description }}</p>
         <p class="card-text"><strong>Precio: ${{ product.price }}</strong></p>
+        {% for comment in product.comment_set.all %}
+          <p class="card-text">{{ comment.description }}</p>
+        {% endfor %}
+        <a href="{% url 'update' product.id %}" class="btn btn-primary mt-3">Editar Paquete</a>
+        <form action="{% url 'delete' product.id %}" method="POST" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger mt-3" onclick="return confirm('¿Estás seguro de que quieres eliminar este paquete de anuncios?');">Eliminar Paquete</button>
+        </form>
       </div>
     </div>
   </div>

@@ -35,9 +35,9 @@
               >Sobre Nosotros</a
             >
             <a class="nav-link active" href="{% url 'contact' %}">Contacto</a>
-            <a class="nav-link active" href="{% url 'index' %}">Servicios</a>
+            <a class="nav-link active" href="{% url 'index' %}">Paquetes de Anuncios</a>
             <a class="nav-link active" href="{% url 'form' %}"
-              >Agregar Servicio</a
+              >Agregar Paquete</a
             >
           </div>
         </div>
@@ -54,6 +54,17 @@
     </header>
 
     <div class="container my-4">{% block content %} {% endblock %}</div>
+
+    {% if messages %}
+    <div class="container">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     <div class="copyright py-4 text-center text-white">
       <div class="container">
