@@ -3,6 +3,7 @@ from django.db import models
 class Product(models.Model):
     name = models.CharField(max_length=255)
     price = models.IntegerField()
+    image = models.ImageField(upload_to='products/', blank=True, null=True) # Nuevo campo para la imagen
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -1,0 +1,41 @@
+{% extends 'pages/base.html' %}
+{% block title %} {{title}} {% endblock %}
+{% block header_title %} {{subtitle}} {% endblock %}
+
+{% block content %}
+<div class="container">
+  
+
+   <div class="row justify-content-center">
+    <div class="col-md-12">
+    <h1>Productos en el carrito</h1>
+      {% if cart_products %}
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Precio</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for product in cart_products %}
+          <tr>
+            <td>{{ product.id }}</td>
+            <td>{{ product.name }}</td>
+            <td>${{ product.price }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <form method="post" action="{% url 'cart_removeAll' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Vaciar Carrito</button>
+      </form>
+      {% else %}
+      <p>Tu carrito está vacío.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

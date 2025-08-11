@@ -8,6 +8,21 @@ from django import forms
 from django.core.exceptions import ValidationError
 from .models import Product
 
+def ImageViewFactory(image_storage):
+    class ImageView(View):
+        template_name = 'images/index.html'
+
+        def get(self, request):
+            image_url = request.session.get('image_url', '')
+            return render(request, self.template_name, {'image_url': image_url})
+
+        def post(self, request):
+            image_url = image_storage.store(request)
+            request.session['image_url'] = image_url
+            return redirect('image_index')
+    return ImageView
+
+
 class HomePageView(TemplateView):
     template_name = 'pages/home.html'
 
@@ -82,7 +97,7 @@ class ProductListView(ListView):
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['name', 'price']
+        fields = ['name', 'price', 'image']
 
     def clean_price(self):
         price = self.cleaned_data['price']
@@ -101,7 +116,7 @@ class ProductCreateView(View):
         return render(request, self.template_name, viewData)
     
     def post(self, request):
-        form = ProductForm(request.POST)
+        form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, '¡Paquete de anuncios creado exitosamente!')
@@ -133,7 +148,7 @@ class ProductUpdateView(View):
 
     def post(self, request, id):
         product = get_object_or_404(Product, pk=id)
-        form = ProductForm(request.POST, instance=product)
+        form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
             form.save()
             messages.success(request, '¡Paquete de anuncios actualizado exitosamente!')
@@ -144,3 +159,60 @@ class ProductUpdateView(View):
             viewData["form"] = form
             viewData["product"] = product
             return render(request, self.template_name, viewData)
+
+class CartView(View):
+    template_name = 'cart/index.html'
+
+    def get(self, request):
+        print("--- CartView GET ---")
+        print(f"Contenido de la sesión en GET: {request.session.items()}")
+        # Obtener productos del carrito de la sesión
+        productos_en_carrito_ids = request.session.get('cart_product_data', {}).keys()
+        print(f"IDs de productos en carrito (GET): {list(productos_en_carrito_ids)}")
+        productos_en_carrito = Product.objects.filter(pk__in=productos_en_carrito_ids)
+        print(f"Productos encontrados en DB (GET): {productos_en_carrito}")
+
+        # Preparar datos para la vista
+        datos_vista = {
+            'title': 'Carrito - Plug&Ad',
+            'subtitle': 'Tu Carrito de Compras',
+            'products': Product.objects.all(), # Todos los productos disponibles
+            'cart_products': productos_en_carrito
+        }
+
+        return render(request, self.template_name, datos_vista)
+
+    def post(self, request, product_id):
+        print("--- CartView POST ---")
+        print(f"ID de producto recibido en POST: {product_id}")
+        # Obtener productos del carrito de la sesión y añadir el nuevo producto
+        datos_productos_carrito = request.session.get('cart_product_data', {})
+        print(f"Datos de carrito antes de añadir (POST): {datos_productos_carrito}")
+        datos_productos_carrito[int(product_id)] = int(product_id)
+        request.session['cart_product_data'] = datos_productos_carrito
+        request.session.modified = True # Asegurarse de que la sesión se guarde
+        print(f"Datos de carrito después de añadir (POST): {datos_productos_carrito}")
+        print(f"Contenido de la sesión después de añadir (POST): {request.session.items()}")
+
+        return redirect('cart_index')
+
+class CartRemoveAllView(View):
+    def post(self, request):
+        # Eliminar todos los productos del carrito en la sesión
+        if 'cart_product_data' in request.session:
+            del request.session['cart_product_data']
+
+        return redirect('cart_index')
+
+class ImageViewNoDI(View):
+    template_name = 'imagesnotdi/index.html'
+
+    def get(self, request):
+        image_url = request.session.get('image_url', '')
+        return render(request, self.template_name, {'image_url': image_url})
+
+    def post(self, request):
+        image_storage = ImageLocalStorage()
+        image_url = image_storage.store(request)
+        request.session['image_url'] = image_url
+        return redirect('image_index')

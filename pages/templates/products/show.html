@@ -2,11 +2,19 @@
 <div class="card mb-3">
   <div class="row g-0">
     <div class="col-md-4">
+      {% if product.image %}
       <img
-        src="https://static.djangoproject.com/img/logos/django-logo-positive.svg"
+        src="{{ product.image.url }}"
         class="img-fluid rounded-start"
-        alt="Imagen del servicio"
+        alt="{{ product.name }}"
       />
+      {% else %}
+      <img
+        src="https://via.placeholder.com/300x200?text=No+Image"
+        class="img-fluid rounded-start"
+        alt="No Image Available"
+      />
+      {% endif %}
     </div>
     <div class="col-md-8">
       <div class="card-body">
@@ -21,6 +29,10 @@
         <form action="{% url 'delete' product.id %}" method="POST" class="d-inline">
             {% csrf_token %}
             <button type="submit" class="btn btn-danger mt-3" onclick="return confirm('¿Estás seguro de que quieres eliminar este paquete de anuncios?');">Eliminar Paquete</button>
+        </form>
+        <form method="post" action="{% url 'cart_add' product.id %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success mt-3">Añadir al Carrito</button>
         </form>
       </div>
     </div>

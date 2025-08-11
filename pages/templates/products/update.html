@@ -12,7 +12,7 @@
                 {{ title }}
             </div>
             <div class="card-body">
-                <form action="{% url 'update' product.id %}" method="POST">
+                <form action="{% url 'update' product.id %}" method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
                     {{ form.as_p }}
                     <button type="submit" class="btn btn-primary">Actualizar</button>
