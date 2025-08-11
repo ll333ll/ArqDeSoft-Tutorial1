@@ -1,7 +1,3 @@
-# Plug&Ad: Tu Plataforma de Anuncios Inteligente
-
-¡Bienvenido al repositorio de Plug&Ad! Esta es una aplicación web desarrollada con Django que te permite gestionar paquetes de anuncios de manera eficiente. Hemos implementado funcionalidades clave y principios de diseño de software para asegurar una aplicación robusta y escalable.
-
 ## Características Principales
 
 - **Gestión de Productos/Paquetes de Anuncios:** Crea, edita, visualiza y elimina tus paquetes de anuncios.
@@ -14,7 +10,3 @@
 Este proyecto ha sido desarrollado por:
 
 - **Jose Alejandro Jimenez Vasquez**
-- **Felipe Castro**
-- **Nicolas Vasquez**
-
-¡Esperamos que disfrutes explorando Plug&Ad!
