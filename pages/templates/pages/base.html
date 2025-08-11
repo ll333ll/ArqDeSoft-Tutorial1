@@ -31,19 +31,34 @@
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
           <div class="navbar-nav ms-auto">
             <a class="nav-link active" href="{% url 'home' %}">Inicio</a>
-            <a class="nav-link active" href="{% url 'about' %}"
-              >Sobre Nosotros</a
-            >
+            <a class="nav-link active" href="{% url 'about' %}">Sobre Nosotros</a>
             <a class="nav-link active" href="{% url 'contact' %}">Contacto</a>
             <a class="nav-link active" href="{% url 'index' %}">Paquetes de Anuncios</a>
-            <a class="nav-link active" href="{% url 'form' %}"
-              >Agregar Paquete</a
-            >
-            <a class="nav-link active" href="{% url 'cart_index' %}">Carrito</a>
+            {% if user.is_authenticated %}
+                {% if user.is_staff %}
+                    <a class="nav-link active" href="{% url 'form' %}">Agregar Paquete</a>
+                {% endif %}
+                <a class="nav-link active" href="{% url 'cart_index' %}">Carrito</a>
+                <a class="nav-link active" href="{% url 'profile' %}">Perfil</a>
+                <a class="nav-link active" href="{% url 'logout' %}?next={% url 'home' %}">Cerrar Sesión</a>
+            {% else %}
+                <a class="nav-link active" href="{% url 'login' %}?next={% url 'home' %}">Iniciar Sesión</a>
+                <a class="nav-link active" href="{% url 'register' %}">Registrarse</a>
+            {% endif %}
           </div>
         </div>
       </div>
     </nav>
+
+    {# Cart Banner #}
+    {% if cart_item_count > 0 %}
+    <div class="container mt-3">
+        <div class="alert alert-info text-center" role="alert">
+            Tienes {{ cart_item_count }} producto(s) en tu <a href="{% url 'cart_index' %}" class="alert-link">carrito</a>.
+        </div>
+    </div>
+    {% endif %}
+    {# End Cart Banner #}
 
     <header class="masthead bg-primary text-white text-center py-4">
       <div class="container d-flex align-items-center flex-column">

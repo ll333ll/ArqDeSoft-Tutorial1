@@ -1,4 +1,5 @@
 from django.urls import path
+from django.urls import path
 from .views import (
     HomePageView, 
     AboutPageView, 
@@ -11,7 +12,9 @@ from .views import (
     CartView,
     CartRemoveAllView,
     ImageViewFactory,
-    ImageViewNoDI
+    ImageViewNoDI,
+    register, # Added for registration
+    profile # Added for user profile
 )
 from .utils import ImageLocalStorage
 
@@ -31,4 +34,6 @@ urlpatterns = [
     path('image/save', ImageViewFactory(ImageLocalStorage()).as_view(), name='image_save'),
     path('imagenotdi/', ImageViewNoDI.as_view(), name='imagenodi_index'),
     path('imagenotdi/save', ImageViewNoDI.as_view(), name='imagenodi_save'),
+    path('register/', register, name='register'), # Added for registration
+    path('profile/', profile, name='profile'), # Added for user profile
 ]

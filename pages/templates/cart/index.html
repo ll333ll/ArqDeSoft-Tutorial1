@@ -32,8 +32,10 @@
         {% csrf_token %}
         <button type="submit" class="btn btn-danger">Vaciar Carrito</button>
       </form>
+      <a href="{% url 'index' %}" class="btn btn-primary mt-3">Continuar Comprando</a>
       {% else %}
       <p>Tu carrito está vacío.</p>
+      <a href="{% url 'index' %}" class="btn btn-primary mt-3">Continuar Comprando</a>
       {% endif %}
     </div>
   </div>

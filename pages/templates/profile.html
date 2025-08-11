@@ -1,0 +1,38 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+
+{% block title %}Perfil de Usuario{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h2>Perfil de Usuario</h2>
+                </div>
+                <div class="card-body">
+                    <div class="media mb-4">
+                        <img class="rounded-circle account-img" src="{{ user.profile.image.url }}" style="height: 125px; width: 125px; object-fit: cover;">
+                        <div class="media-body">
+                            <h2 class="account-heading">{{ user.username }}</h2>
+                            <p class="text-secondary">{{ user.email }}</p>
+                        </div>
+                    </div>
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <fieldset class="form-group">
+                            <legend class="border-bottom mb-4">Información de Perfil</legend>
+                            {{ u_form.as_p }}
+                            {{ p_form.as_p }}
+                        </fieldset>
+                        <div class="form-group">
+                            <button class="btn btn-outline-info" type="submit">Actualizar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

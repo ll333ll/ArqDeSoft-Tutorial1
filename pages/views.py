@@ -7,6 +7,11 @@ from django.urls import reverse
 from django import forms
 from django.core.exceptions import ValidationError
 from .models import Product
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from .forms import UserUpdateForm, ProfileUpdateForm
 
 def ImageViewFactory(image_storage):
     class ImageView(View):
@@ -105,7 +110,9 @@ class ProductForm(forms.ModelForm):
             raise ValidationError('El precio debe ser mayor que cero.')
         return price
 
-class ProductCreateView(View):
+class ProductCreateView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        return self.request.user.is_staff
     template_name = 'products/create.html'
     
     def get(self, request):
@@ -127,14 +134,18 @@ class ProductCreateView(View):
             viewData["form"] = form
             return render(request, self.template_name, viewData)
 
-class ProductDeleteView(View):
+class ProductDeleteView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        return self.request.user.is_staff
     def post(self, request, id):
         product = get_object_or_404(Product, pk=id)
         product.delete()
         messages.success(request, '¡Paquete de anuncios eliminado exitosamente!')
         return redirect('index')
 
-class ProductUpdateView(View):
+class ProductUpdateView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        return self.request.user.is_staff
     template_name = 'products/update.html'
 
     def get(self, request, id):
@@ -194,7 +205,7 @@ class CartView(View):
         print(f"Datos de carrito después de añadir (POST): {datos_productos_carrito}")
         print(f"Contenido de la sesión después de añadir (POST): {request.session.items()}")
 
-        return redirect('cart_index')
+        return redirect('index')
 
 class CartRemoveAllView(View):
     def post(self, request):
@@ -216,3 +227,38 @@ class ImageViewNoDI(View):
         image_url = image_storage.store(request)
         request.session['image_url'] = image_url
         return redirect('image_index')
+
+def register(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, '¡Registro exitoso!')
+            return redirect('home')
+    else:
+        form = UserCreationForm()
+    return render(request, 'registration/register.html', {'form': form})
+
+@login_required
+def profile(request):
+    if request.method == 'POST':
+        u_form = UserUpdateForm(request.POST, instance=request.user)
+        p_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
+
+        if u_form.is_valid() and p_form.is_valid():
+            u_form.save()
+            p_form.save()
+            messages.success(request, '¡Tu perfil ha sido actualizado exitosamente!')
+            return redirect('profile')
+
+    else:
+        u_form = UserUpdateForm(instance=request.user)
+        p_form = ProfileUpdateForm(instance=request.user.profile)
+
+    context = {
+        'u_form': u_form,
+        'p_form': p_form
+    }
+
+    return render(request, 'profile.html', context)
